@@ -4,11 +4,23 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-F3J3FJKRWF"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+
+    gtag('config', 'G-F3J3FJKRWF');
+  </script>
   <title>Calculadora de Média UNIFAPCE</title>
-  <meta name="description" content="Calcule sua média, descubra sua situação acadêmica e acompanhe seu histórico de forma rápida." />
+  <meta name="description"
+    content="Calcule sua média, descubra sua situação acadêmica e acompanhe seu histórico de forma rápida." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+    rel="stylesheet" />
   <link rel="stylesheet" href="css/reset.css" />
   <link rel="stylesheet" href="css/style.css" />
   <link rel="stylesheet" href="css/responsive.css" />
@@ -35,7 +47,8 @@
             <h2 class="card-title">Histórico</h2>
           </header>
 
-          <p id="historyEmpty" class="muted history-empty-copy">Nenhum cálculo salvo ainda. Seus resultados mais recentes aparecerão aqui.</p>
+          <p id="historyEmpty" class="muted history-empty-copy">Nenhum cálculo salvo ainda. Seus resultados mais
+            recentes aparecerão aqui.</p>
           <ul id="historyList" class="history-list" aria-label="Lista de histórico"></ul>
 
           <button id="clearHistoryBtn" type="button" class="btn-link">Limpar histórico</button>
@@ -55,7 +68,8 @@
               <h2 class="calc-header-title">Calculadora de Média</h2>
             </div>
 
-            <button id="openHistoryBtn" type="button" class="history-toggle" aria-controls="historyDrawer" aria-expanded="false">
+            <button id="openHistoryBtn" type="button" class="history-toggle" aria-controls="historyDrawer"
+              aria-expanded="false">
               Histórico
             </button>
           </header>
@@ -65,7 +79,8 @@
               <legend class="section-title">Disciplina</legend>
               <label class="field">
                 <span class="field-label">Nome da disciplina</span>
-                <input id="disciplina" class="field-input" type="text" autocomplete="off" placeholder="Ex: Cálculo I, Programação, Física" />
+                <input id="disciplina" class="field-input" type="text" autocomplete="off"
+                  placeholder="Ex: Cálculo I, Programação, Física" />
               </label>
             </fieldset>
 
@@ -75,19 +90,23 @@
               <div class="grid tdes">
                 <label class="field">
                   <span class="field-label">TDE 1</span>
-                  <input id="tde1" class="field-input" inputmode="decimal" type="number" min="0" max="10" step="0.1" placeholder="0,0" />
+                  <input id="tde1" class="field-input" inputmode="decimal" type="number" min="0" max="10" step="0.1"
+                    placeholder="0,0" />
                 </label>
                 <label class="field">
                   <span class="field-label">TDE 2</span>
-                  <input id="tde2" class="field-input" inputmode="decimal" type="number" min="0" max="10" step="0.1" placeholder="0,0" />
+                  <input id="tde2" class="field-input" inputmode="decimal" type="number" min="0" max="10" step="0.1"
+                    placeholder="0,0" />
                 </label>
                 <label class="field">
                   <span class="field-label">TDE 3</span>
-                  <input id="tde3" class="field-input" inputmode="decimal" type="number" min="0" max="10" step="0.1" placeholder="0,0" />
+                  <input id="tde3" class="field-input" inputmode="decimal" type="number" min="0" max="10" step="0.1"
+                    placeholder="0,0" />
                 </label>
                 <label class="field">
                   <span class="field-label">TDE 4</span>
-                  <input id="tde4" class="field-input" inputmode="decimal" type="number" min="0" max="10" step="0.1" placeholder="0,0" />
+                  <input id="tde4" class="field-input" inputmode="decimal" type="number" min="0" max="10" step="0.1"
+                    placeholder="0,0" />
                 </label>
               </div>
             </fieldset>
@@ -98,11 +117,13 @@
               <div class="grid avps">
                 <label class="field">
                   <span class="field-label">AVP 1</span>
-                  <input id="avp1" class="field-input" inputmode="decimal" type="number" min="0" max="10" step="0.1" placeholder="0,0" />
+                  <input id="avp1" class="field-input" inputmode="decimal" type="number" min="0" max="10" step="0.1"
+                    placeholder="0,0" />
                 </label>
                 <label class="field">
                   <span class="field-label">AVP 2</span>
-                  <input id="avp2" class="field-input" inputmode="decimal" type="number" min="0" max="10" step="0.1" placeholder="0,0" />
+                  <input id="avp2" class="field-input" inputmode="decimal" type="number" min="0" max="10" step="0.1"
+                    placeholder="0,0" />
                 </label>
               </div>
             </fieldset>
@@ -151,7 +172,8 @@
           <div class="faq-disclosure__content">
             <details class="faq-item">
               <summary>Como funciona a calculadora de média?</summary>
-              <p>Você informa TDEs e AVPs entre 0 e 10. A calculadora aplica os pesos e mostra sua média semestral automaticamente.</p>
+              <p>Você informa TDEs e AVPs entre 0 e 10. A calculadora aplica os pesos e mostra sua média semestral
+                automaticamente.</p>
             </details>
 
             <details class="faq-item">
@@ -189,7 +211,8 @@
       </div>
 
       <div class="drawer-body">
-        <p id="historyEmptyMobile" class="muted history-empty-copy">Nenhum cálculo salvo ainda. Seus resultados mais recentes aparecerão aqui.</p>
+        <p id="historyEmptyMobile" class="muted history-empty-copy">Nenhum cálculo salvo ainda. Seus resultados mais
+          recentes aparecerão aqui.</p>
         <ul id="historyListMobile" class="history-list" aria-label="Lista de histórico no mobile"></ul>
         <button id="clearHistoryBtnMobile" type="button" class="btn-link">Limpar histórico</button>
       </div>
