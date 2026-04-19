@@ -28,12 +28,13 @@
 
   const HISTORY_KEY = "calc_media_history_unifapce_v2";
   const MAX_HISTORY = 10;
+  const HISTORY_DRAWER_QUERY = "(max-width: 980px)";
 
   const clamp10 = (n) => Math.min(10, Math.max(0, n));
   const round2 = (n) => Math.round(n * 100) / 100;
 
   function isMobile() {
-    return window.matchMedia("(max-width: 899px)").matches;
+    return window.matchMedia(HISTORY_DRAWER_QUERY).matches;
   }
 
   function syncFaqDisclosure() {
@@ -91,7 +92,7 @@
         label: "Reprovado",
         cls: "status--red",
         color: "red",
-        message: "Sua média ficou abaixo de 4,0. Ainda dá para usar esse resultado como referência e se planejar melhor na próxima etapa.",
+        message: "Sua média ficou abaixo de 4,0. Mas não desista, você vai conseguir!",
       };
     }
 
@@ -154,6 +155,8 @@
 
   function resetResult() {
     resultCard.hidden = true;
+    resultCard.classList.remove("highlight");
+    clearTimeout(revealResultCard._highlightTimer);
     mediaTDESpan.textContent = "—";
     mediaSemSpan.textContent = "—";
     statusBadge.hidden = true;
@@ -165,6 +168,27 @@
   function setButtonLoading(isLoading) {
     calcBtn.classList.toggle("is-loading", isLoading);
     calcBtn.setAttribute("aria-busy", isLoading ? "true" : "false");
+  }
+
+  function revealResultCard() {
+    resultCard.hidden = false;
+    resultCard.classList.remove("highlight");
+
+    // Reinicia a animação caso o usuário calcule mais de uma vez em sequência.
+    void resultCard.offsetWidth;
+
+    resultCard.classList.add("highlight");
+    clearTimeout(revealResultCard._highlightTimer);
+    revealResultCard._highlightTimer = window.setTimeout(() => {
+      resultCard.classList.remove("highlight");
+    }, 2000);
+
+    window.setTimeout(() => {
+      resultCard.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    }, 100);
   }
 
   function loadHistory() {
@@ -353,7 +377,7 @@
     const mdRounded = round2(md);
     const status = getStatus(mdRounded);
 
-    resultCard.hidden = false;
+    revealResultCard();
     mediaTDESpan.textContent = tdeRounded.toFixed(2).replace(".", ",");
     mediaSemSpan.textContent = mdRounded.toFixed(2).replace(".", ",");
 

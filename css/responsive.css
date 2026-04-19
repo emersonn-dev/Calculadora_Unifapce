@@ -140,6 +140,12 @@
   .history-drawer.is-open {
     width: min(92vw, 340px);
   }
+
+  .footer-contact .footer-link {
+    display: block;
+    margin-top: 4px;
+    margin-left: 0;
+  }
 }
 
 @media (max-width: 520px) {

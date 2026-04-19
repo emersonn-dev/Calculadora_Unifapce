@@ -532,6 +532,10 @@ select {
   padding: 24px 26px;
 }
 
+.result-card.highlight {
+  animation: result-card-highlight 2s ease;
+}
+
 .badge {
   display: inline-flex;
   align-items: center;
@@ -681,16 +685,62 @@ select {
 }
 
 .footer {
-  padding: 30px 0 10px;
+  margin-top: 34px;
+  padding: 22px 16px 14px;
+  border-top: 1px solid #dbe4ef;
+  background: #f8fafc;
   text-align: center;
   color: var(--text-soft);
   font-size: 0.88rem;
+}
+
+.footer-content {
+  width: min(100%, 560px);
+  margin: 0 auto;
+}
+
+.footer-dev,
+.footer-contact,
+.footer-note {
+  margin: 0;
+}
+
+.footer-dev {
+  color: var(--text);
+  font-size: 0.92rem;
+  line-height: 1.6;
 }
 
 .footer-link {
   color: var(--primary);
   font-weight: 700;
   text-decoration: none;
+}
+
+.footer-dev .footer-link strong {
+  font-weight: 800;
+}
+
+.footer-contact {
+  margin-top: 8px;
+  color: var(--text-soft);
+  font-size: 0.82rem;
+  line-height: 1.6;
+  opacity: 0.84;
+}
+
+.footer-contact .footer-link {
+  margin-left: 4px;
+  color: #1566be;
+  text-decoration: underline;
+}
+
+.footer-note {
+  margin-top: 10px;
+  color: #8a98ab;
+  font-size: 0.77rem;
+  line-height: 1.55;
+  opacity: 0.78;
 }
 
 .footer-link:hover,
@@ -701,5 +751,20 @@ select {
 @keyframes spin {
   to {
     transform: rotate(360deg);
+  }
+}
+
+@keyframes result-card-highlight {
+  0% {
+    transform: scale(0.985);
+    box-shadow: 0 0 0 rgba(21, 102, 190, 0), 0 20px 48px rgba(15, 23, 42, 0.10);
+  }
+  35% {
+    transform: scale(1.01);
+    box-shadow: 0 0 0 10px rgba(21, 102, 190, 0.10), 0 24px 52px rgba(15, 23, 42, 0.14);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 rgba(21, 102, 190, 0), 0 8px 24px rgba(15, 23, 42, 0.06);
   }
 }
