@@ -4,31 +4,31 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="color-scheme" content="light dark" />
 
-  <title>Calculadora de Média FAPCE | AVP, TDE e Nota Final</title>
+  <title>Calculadora de Média UNIFAPCE | AVP, TDE, AVF e Situação Final</title>
 
   <meta name="description"
-    content="Calcule sua média na FAPCE com AVP e TDE. Descubra sua nota final, saiba se foi aprovado ou se precisa de AVF de forma rápida e gratuita." />
+    content="Calcule sua média na UNIFAPCE com AVP e TDE. Descubra se foi aprovado, se vai para AVF e quanto precisa para atingir a média final." />
   <meta name="keywords"
-    content="calculadora fapce, calculadora de média fapce, calcular média faculdade, avp tde média, nota final faculdade, avf fapce, média semestral" />
+    content="calculadora unifapce, calculadora média faculdade, média avp tde, média final, avf, calculadora de notas" />
   <meta name="author" content="Emerson" />
   <meta name="robots" content="index, follow" />
 
   <link rel="canonical" href="https://calculadora-media-fapce.vercel.app/" />
 
-  <meta property="og:title" content="Calculadora de Média FAPCE | AVP, TDE e Nota Final" />
+  <meta property="og:title" content="Calculadora de Média UNIFAPCE | AVP, TDE, AVF e Situação Final" />
   <meta property="og:description"
-    content="Calcule sua média na FAPCE com AVP e TDE e descubra sua situação acadêmica de forma rápida e gratuita." />
+    content="Preencha suas notas e descubra instantaneamente se foi aprovado, se vai para AVF ou quanto ainda falta." />
   <meta property="og:url" content="https://calculadora-media-fapce.vercel.app/" />
   <meta property="og:type" content="website" />
   <meta property="og:locale" content="pt_BR" />
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="Calculadora de Média FAPCE | AVP, TDE e Nota Final" />
+  <meta name="twitter:title" content="Calculadora de Média UNIFAPCE | AVP, TDE, AVF e Situação Final" />
   <meta name="twitter:description"
-    content="Calcule sua média na FAPCE com AVP e TDE e descubra sua situação acadêmica." />
+    content="Calcule sua média com AVP e TDE e veja sua situação acadêmica de forma rápida e clara." />
 
-  <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-F3J3FJKRWF"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
@@ -37,6 +37,7 @@
     gtag('config', 'G-F3J3FJKRWF');
   </script>
 
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/capelo.png">
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
@@ -52,9 +53,6 @@
     <header class="hero">
       <div class="hero__intro">
         <div class="hero__heading">
-          <div class="hero__mark" aria-hidden="true">
-            <img class="brand-icon-img" src="assets/capelo.png" alt="" aria-hidden="true" />
-          </div>
           <h1 class="brand-title">Calculadora UNIFAPCE</h1>
         </div>
         <p class="brand-subtitle">Calcule sua média e descubra sua situação acadêmica.</p>
@@ -65,7 +63,9 @@
       <aside class="sidebar" aria-label="Histórico">
         <section class="history-card card-surface" aria-label="Histórico de cálculos">
           <header class="panel-header">
-            <h2 class="card-title">Histórico</h2>
+            <div>
+              <h2 class="card-title">Histórico</h2>
+            </div>
           </header>
 
           <p id="historyEmpty" class="muted history-empty-copy">Nenhum cálculo salvo ainda. Seus resultados mais
@@ -77,7 +77,7 @@
       </aside>
 
       <section class="content" aria-label="Calculadora">
-        <section class="calc-card card-surface" aria-label="Calculadora de Média">
+        <section class="calc-card card-surface" aria-label="Calculadora de média">
           <header class="calc-card__header">
             <div class="calc-card__title-wrap">
               <span class="calc-card__icon" aria-hidden="true">
@@ -86,108 +86,122 @@
                   <path d="M8 6h8M8 10h3M8 14h3M13 10h3M13 14h3M8 18h8" />
                 </svg>
               </span>
-              <h2 class="calc-header-title">Calculadora de Média</h2>
+              <div>
+                <h2 class="calc-header-title">Calculadora de média</h2>
+                <p class="calc-header-subtitle">Preencha as notas de 0 a 10 e clique em calcular.</p>
+              </div>
             </div>
 
             <button id="openHistoryBtn" type="button" class="history-toggle" aria-controls="historyDrawer"
               aria-expanded="false">
-              Histórico
+              Abrir histórico
             </button>
           </header>
 
           <div class="calc-body">
+            <div class="guide-banner" aria-label="Instrução principal">
+              <strong>Como usar:</strong> Preencha as notas que você já tem. Se faltar alguma prova, mostramos o que
+              você precisa tirar.
+            </div>
+
             <fieldset class="fieldset">
               <legend class="section-title">Disciplina</legend>
               <label class="field">
-                <span class="field-label">Nome da disciplina</span>
-                <input id="disciplina" class="field-input" type="text" autocomplete="off"
-                  placeholder="Ex: Cálculo I, Programação, Física" />
+                <span class="field-label">Nome da disciplina (não obrigatório)</span>
+                <input id="disciplina" class="field-input" type="text" autocomplete="off" placeholder="Ex: Cálculo I" />
               </label>
             </fieldset>
 
-            <fieldset class="fieldset">
-              <legend class="section-title">TDEs</legend>
-              <p class="section-helper">Digite notas entre 0 e 10. Campos vazios serão considerados como 0.</p>
-              <div class="grid tdes">
-                <label class="field">
-                  <span class="field-label">TDE 1</span>
-                  <input id="tde1" class="field-input" inputmode="decimal" type="number" min="0" max="10" step="0.1"
-                    placeholder="0,0" />
-                </label>
-                <label class="field">
-                  <span class="field-label">TDE 2</span>
-                  <input id="tde2" class="field-input" inputmode="decimal" type="number" min="0" max="10" step="0.1"
-                    placeholder="0,0" />
-                </label>
-                <label class="field">
-                  <span class="field-label">TDE 3</span>
-                  <input id="tde3" class="field-input" inputmode="decimal" type="number" min="0" max="10" step="0.1"
-                    placeholder="0,0" />
-                </label>
-                <label class="field">
-                  <span class="field-label">TDE 4</span>
-                  <input id="tde4" class="field-input" inputmode="decimal" type="number" min="0" max="10" step="0.1"
-                    placeholder="0,0" />
-                </label>
-              </div>
-            </fieldset>
+            <div class="group-panels">
+              <section class="score-panel" aria-labelledby="tdes-title">
+                <h3 id="tdes-title" class="section-title">TDEs</h3>
+                <p class="section-helper">Digite notas entre 0 e 10. Campos vazios serão considerados como 0.</p>
+                <div class="grid tdes">
+                  <label class="field">
+                    <span class="field-label">TDE 1</span>
+                    <input id="tde1" class="field-input" inputmode="decimal" type="number" min="0" max="10" step="0.1"
+                      placeholder="8.5" />
+                  </label>
+                  <label class="field">
+                    <span class="field-label">TDE 2</span>
+                    <input id="tde2" class="field-input" inputmode="decimal" type="number" min="0" max="10" step="0.1"
+                      placeholder="7.0" />
+                  </label>
+                  <label class="field">
+                    <span class="field-label">TDE 3</span>
+                    <input id="tde3" class="field-input" inputmode="decimal" type="number" min="0" max="10" step="0.1"
+                      placeholder="9.0" />
+                  </label>
+                  <label class="field">
+                    <span class="field-label">TDE 4</span>
+                    <input id="tde4" class="field-input" inputmode="decimal" type="number" min="0" max="10" step="0.1"
+                      placeholder="6.5" />
+                  </label>
+                </div>
+              </section>
 
-            <fieldset class="fieldset">
-              <legend class="section-title">AVPs</legend>
-              <p class="section-helper">As avaliações têm maior peso no cálculo final.</p>
-              <div class="grid avps">
-                <label class="field">
-                  <span class="field-label">AVP 1</span>
-                  <input id="avp1" class="field-input" inputmode="decimal" type="number" min="0" max="10" step="0.1"
-                    placeholder="0,0" />
-                </label>
-                <label class="field">
-                  <span class="field-label">AVP 2</span>
-                  <input id="avp2" class="field-input" inputmode="decimal" type="number" min="0" max="10" step="0.1"
-                    placeholder="0,0" />
-                </label>
-              </div>
-            </fieldset>
+              <section class="score-panel score-panel--accent" aria-labelledby="avps-title">
+                <h3 id="avps-title" class="section-title">AVPs</h3>
+                <p class="section-helper">As avaliações têm maior peso no cálculo final.</p>
+                <div class="grid avps">
+                  <label class="field">
+                    <span class="field-label">AVP 1</span>
+                    <input id="avp1" class="field-input" inputmode="decimal" type="number" min="0" max="10" step="0.1"
+                      placeholder="8.0" />
+                  </label>
+                  <label class="field">
+                    <span class="field-label">AVP 2</span>
+                    <input id="avp2" class="field-input" inputmode="decimal" type="number" min="0" max="10" step="0.1"
+                      placeholder="7.5" />
+                  </label>
+                </div>
+              </section>
+            </div>
 
             <div class="actions" role="group" aria-label="Ações">
               <button id="calcBtn" type="button" class="btn-primary" disabled>
                 <span class="btn-primary__label">Calcular média</span>
                 <span class="btn-loader" aria-hidden="true"></span>
               </button>
-              <button id="clearBtn" type="button" class="btn-secondary">Limpar campos</button>
+              <button id="clearBtn" type="button" class="btn-secondary">Limpar tudo</button>
             </div>
 
+            <p id="formHint" class="form-hint">Dica: pressione Enter para avançar.</p>
             <p id="error" class="error" role="alert" aria-live="assertive"></p>
           </div>
         </section>
 
         <section class="criteria-note" aria-label="Critérios de avaliação">
-          <p><b>Critérios:</b> MD ≥ 7,0 aprovado · 4,0 ≤ MD &lt; 7,0 AVF · média final ≥ 5,0 aprovado após AVF.</p>
+          <p><b>Critérios:</b> MD &ge; 7,0 aprovado · 4,0 &le; MD &lt; 7,0 AVF · média final &ge; 5,0 aprovado após AVF.</p>
         </section>
 
         <section id="resultCard" class="result-card card-surface" aria-live="polite" hidden>
           <header class="panel-header panel-header--result">
-            <h2 class="result-card__title">Resumo da média</h2>
-            <div id="statusBadge" class="badge" hidden>—</div>
+            <div class="result-hero">
+              <h2 id="resultHeadline" class="result-card__headline">Resumo da média</h2>
+              <p id="resultLead" class="result-card__lead"></p>
+            </div>
           </header>
 
           <div class="result-grid">
             <article class="result-metric">
               <span class="result-metric__label">Média dos TDEs</span>
-              <strong id="mediaTDE">—</strong>
+              <strong id="mediaTDE">--</strong>
             </article>
             <article class="result-metric result-metric--highlight">
               <span class="result-metric__label">Média semestral</span>
-              <strong id="mediaSem">—</strong>
+              <strong id="mediaSem">--</strong>
             </article>
           </div>
 
-          <p id="message" class="message"></p>
+          <div class="result-summary">
+            <p id="message" class="message"></p>
+          </div>
         </section>
 
         <details id="faqDisclosure" class="faq-card card-surface faq" aria-label="Perguntas frequentes" open>
           <summary class="faq-disclosure__summary">
-            <span class="faq-title">Perguntas Frequentes (FAQ)</span>
+            <span class="faq-title">Perguntas frequentes</span>
           </summary>
 
           <div class="faq-disclosure__content">
@@ -213,8 +227,9 @@
             </details>
 
             <details class="faq-item">
-              <summary>Qual nota preciso tirar na AVF?</summary>
-              <p>Para atingir média final 5, a nota mínima na AVF é 10 menos a sua média semestral.</p>
+              <summary>Preciso preencher todas as notas?</summary>
+              <p>Não. Você pode informar apenas as notas que já possui.
+                Se faltar alguma, mostramos quanto você precisa tirar na prova para atingir a média.</p>
             </details>
           </div>
         </details>
@@ -225,9 +240,11 @@
 
     <aside id="historyDrawer" class="history-drawer" aria-hidden="true" aria-label="Histórico no mobile">
       <div class="drawer-header">
-        <span id="drawerTitle">Histórico</span>
+        <div>
+          <span id="drawerTitle">Histórico</span>
+        </div>
         <button id="closeHistoryBtn" type="button" class="drawer-close" aria-label="Fechar">
-          <span aria-hidden="true">×</span>
+          <span aria-hidden="true">x</span>
         </button>
       </div>
 
@@ -249,7 +266,8 @@
         </p>
         <p class="footer-contact">
           Dúvidas ou sugestões:
-          <a class="footer-link" href="mailto:emersonamorim445@gmail.com?subject=Contato%20Calculadora%20FAPCE">Email</a>
+          <a class="footer-link"
+            href="mailto:emersonamorim445@gmail.com?subject=Contato%20Calculadora%20FAPCE">E-mail</a>
         </p>
         <p class="footer-note">Este projeto é independente e não possui vínculo oficial com a instituição.</p>
       </div>

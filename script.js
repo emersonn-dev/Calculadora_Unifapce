@@ -1,6 +1,7 @@
 (() => {
-  const ids = ["tde1", "tde2", "tde3", "tde4", "avp1", "avp2"];
-  const elems = Object.fromEntries(ids.map((id) => [id, document.getElementById(id)]));
+  const scoreIds = ["tde1", "tde2", "tde3", "tde4", "avp1", "avp2"];
+  const navigationIds = ["disciplina", ...scoreIds];
+  const elems = Object.fromEntries(scoreIds.map((id) => [id, document.getElementById(id)]));
 
   const disciplinaInput = document.getElementById("disciplina");
   const calcBtn = document.getElementById("calcBtn");
@@ -8,7 +9,8 @@
 
   const mediaTDESpan = document.getElementById("mediaTDE");
   const mediaSemSpan = document.getElementById("mediaSem");
-  const statusBadge = document.getElementById("statusBadge");
+  const resultHeadline = document.getElementById("resultHeadline");
+  const resultLead = document.getElementById("resultLead");
   const message = document.getElementById("message");
   const errorBox = document.getElementById("error");
   const resultCard = document.getElementById("resultCard");
@@ -26,9 +28,10 @@
   const historyListMobile = document.getElementById("historyListMobile");
   const clearHistoryBtnMobile = document.getElementById("clearHistoryBtnMobile");
 
-  const HISTORY_KEY = "calc_media_history_unifapce_v2";
-  const MAX_HISTORY = 10;
+  const HISTORY_KEY = "calc_media_history_unifapce_v3";
+  const MAX_HISTORY = 12;
   const HISTORY_DRAWER_QUERY = "(max-width: 980px)";
+  const RESULT_STATUS_CLASSES = ["status--green", "status--yellow", "status--red"];
 
   const clamp10 = (n) => Math.min(10, Math.max(0, n));
   const round2 = (n) => Math.round(n * 100) / 100;
@@ -66,9 +69,10 @@
   function formatDateTime(date) {
     const dd = pad2(date.getDate());
     const mm = pad2(date.getMonth() + 1);
+    const yyyy = date.getFullYear();
     const hh = pad2(date.getHours());
     const mi = pad2(date.getMinutes());
-    return `${dd}/${mm} ${hh}:${mi}`;
+    return `${dd}/${mm}/${yyyy} ${hh}:${mi}`;
   }
 
   function getDisciplina() {
@@ -90,9 +94,11 @@
       return {
         key: "reprovado",
         label: "Reprovado",
+        headline: "Reprovado nesta etapa",
         cls: "status--red",
         color: "red",
-        message: "Sua média ficou abaixo de 4,0. Mas não desista, você vai conseguir!",
+        lead: "Média abaixo de 4,0.",
+        message: "Falta média para chegar à AVF.",
       };
     }
 
@@ -100,18 +106,22 @@
       return {
         key: "avf",
         label: "Vai para AVF",
+        headline: "Você vai para AVF",
         cls: "status--yellow",
         color: "yellow",
-        message: "",
+        lead: "Média entre 4,0 e 6,9.",
+        message: "Você ainda pode buscar aprovação pela AVF.",
       };
     }
 
     return {
       key: "aprovado",
       label: "Aprovado",
+      headline: "Aprovado",
       cls: "status--green",
       color: "green",
-      message: "Boa notícia: sua média já está na faixa de aprovação.",
+      lead: "Média igual ou maior que 7,0.",
+      message: "Aprovação direta.",
     };
   }
 
@@ -119,12 +129,20 @@
     return clamp10(10 - md);
   }
 
+  function neededAVP2ForApproval(avp1, mediaTDE) {
+    return round2((7 - (avp1 * 0.4) - (mediaTDE * 0.2)) / 0.4);
+  }
+
   function showError(text) {
     errorBox.textContent = text;
     clearTimeout(showError._timer);
     showError._timer = setTimeout(() => {
       errorBox.textContent = "";
-    }, 3200);
+    }, 3600);
+  }
+
+  function isBlankFieldValue(value) {
+    return String(value ?? "").trim() === "";
   }
 
   function updateFieldVisualState(el) {
@@ -148,20 +166,21 @@
   }
 
   function updateCalcButtonState() {
-    const values = ids.map((id) => toNum(elems[id]?.value));
-    const hasAnyValue = values.some((value) => Number.isFinite(value) && value > 0);
-    calcBtn.disabled = !hasAnyValue;
+    const hasAnyScore = scoreIds.some((id) => {
+      const value = toNum(elems[id]?.value);
+      return Number.isFinite(value) && value > 0;
+    });
+    calcBtn.disabled = !hasAnyScore;
   }
 
   function resetResult() {
     resultCard.hidden = true;
-    resultCard.classList.remove("highlight");
+    resultCard.classList.remove("highlight", ...RESULT_STATUS_CLASSES);
     clearTimeout(revealResultCard._highlightTimer);
-    mediaTDESpan.textContent = "—";
-    mediaSemSpan.textContent = "—";
-    statusBadge.hidden = true;
-    statusBadge.className = "badge";
-    statusBadge.textContent = "—";
+    mediaTDESpan.textContent = "--";
+    mediaSemSpan.textContent = "--";
+    resultHeadline.textContent = "Resumo da média";
+    resultLead.textContent = "";
     message.textContent = "";
   }
 
@@ -173,10 +192,7 @@
   function revealResultCard() {
     resultCard.hidden = false;
     resultCard.classList.remove("highlight");
-
-    // Reinicia a animação caso o usuário calcule mais de uma vez em sequência.
     void resultCard.offsetWidth;
-
     resultCard.classList.add("highlight");
     clearTimeout(revealResultCard._highlightTimer);
     revealResultCard._highlightTimer = window.setTimeout(() => {
@@ -186,9 +202,9 @@
     window.setTimeout(() => {
       resultCard.scrollIntoView({
         behavior: "smooth",
-        block: "center",
+        block: "start",
       });
-    }, 100);
+    }, 120);
   }
 
   function loadHistory() {
@@ -205,13 +221,13 @@
     try {
       localStorage.setItem(HISTORY_KEY, JSON.stringify(entries));
     } catch {
-      // ignore storage failures
     }
   }
 
-  function buildHistoryItem(item) {
+  function buildHistoryItem(item, index) {
     const li = document.createElement("li");
     li.className = "history-item";
+    li.dataset.index = String(index);
 
     const top = document.createElement("div");
     top.className = "history-top";
@@ -223,16 +239,28 @@
       <div class="history-date">${escapeHtml(item.when)}</div>
     `;
 
+    const actions = document.createElement("div");
+    actions.className = "history-actions";
+
     const badge = document.createElement("div");
     badge.className = `history-badge ${item.color}`;
     badge.textContent = item.statusLabel;
+
+    const removeBtn = document.createElement("button");
+    removeBtn.type = "button";
+    removeBtn.className = "history-remove";
+    removeBtn.setAttribute("aria-label", `Remover cálculo de ${item.disciplina}`);
+    removeBtn.dataset.removeIndex = String(index);
+    removeBtn.textContent = "x";
 
     const line1 = document.createElement("div");
     line1.className = "history-line";
     line1.innerHTML = `MD: <b>${Number(item.md).toFixed(2)}</b> · TDEs: ${Number(item.tde).toFixed(2)}`;
 
+    actions.appendChild(badge);
+    actions.appendChild(removeBtn);
     top.appendChild(left);
-    top.appendChild(badge);
+    top.appendChild(actions);
 
     li.appendChild(top);
     li.appendChild(line1);
@@ -256,9 +284,9 @@
     historyEmpty.style.display = history.length ? "none" : "block";
     historyEmptyMobile.style.display = history.length ? "none" : "block";
 
-    history.forEach((item) => {
-      historyList.appendChild(buildHistoryItem(item));
-      historyListMobile.appendChild(buildHistoryItem(item));
+    history.forEach((item, index) => {
+      historyList.appendChild(buildHistoryItem(item, index));
+      historyListMobile.appendChild(buildHistoryItem(item, index));
     });
   }
 
@@ -267,6 +295,21 @@
     current.unshift(entry);
     saveHistory(current.slice(0, MAX_HISTORY));
     renderHistory();
+  }
+
+  function removeHistoryItem(index) {
+    const current = loadHistory();
+    if (!Number.isInteger(index) || index < 0 || index >= current.length) return;
+    current.splice(index, 1);
+    saveHistory(current);
+    renderHistory();
+    showError("Item removido do histórico.");
+  }
+
+  function clearHistory() {
+    saveHistory([]);
+    renderHistory();
+    showError("Histórico apagado.");
   }
 
   function openDrawer() {
@@ -290,6 +333,7 @@
     if (!el) return;
 
     const rawText = String(el.value).replace(",", ".").trim();
+
     if (!rawText) {
       el.value = "";
       updateFieldVisualState(el);
@@ -298,6 +342,7 @@
     }
 
     const parsed = parseFloat(rawText);
+
     if (!Number.isFinite(parsed)) {
       el.classList.add("is-invalid");
       showError("Digite apenas números entre 0 e 10.");
@@ -312,20 +357,52 @@
       el.value = "10";
       showError("A maior nota permitida é 10.");
     } else {
-      el.value = round2(parsed).toString().replace(".", ",");
+      el.value = round2(parsed).toString();
     }
 
     updateFieldVisualState(el);
     updateCalcButtonState();
   }
 
-  ids.forEach((id) => {
+  function focusById(id) {
+    const field = document.getElementById(id);
+    if (!field) return;
+    field.focus();
+    if (typeof field.select === "function") {
+      field.select();
+    }
+  }
+
+  navigationIds.forEach((id, index) => {
+    const field = document.getElementById(id);
+    if (!field) return;
+
+    field.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        const nextId = navigationIds[index + 1];
+        if (nextId) {
+          focusById(nextId);
+        } else {
+          calcBtn.focus();
+        }
+      }
+
+      if (event.key === "Backspace" && field.value.trim() === "") {
+        const previousId = navigationIds[index - 1];
+        if (previousId) {
+          focusById(previousId);
+        }
+      }
+    });
+  });
+
+  scoreIds.forEach((id) => {
     const el = elems[id];
     if (!el) return;
 
     el.addEventListener("input", () => {
       errorBox.textContent = "";
-      message.textContent = "";
       updateFieldVisualState(el);
       updateCalcButtonState();
     });
@@ -336,11 +413,9 @@
       try {
         el.select();
       } catch {
-        // ignore select failures
       }
     });
 
-    // Evita que a roda do mouse/trackpad altere a nota por acidente.
     el.addEventListener(
       "wheel",
       (event) => {
@@ -356,7 +431,8 @@
   });
 
   calcBtn.addEventListener("click", async () => {
-    const values = ids.map(readVal);
+    const values = scoreIds.map(readVal);
+    const avp2WasBlank = isBlankFieldValue(elems.avp2?.value);
 
     if (values.every((value) => value === 0)) {
       resetResult();
@@ -376,21 +452,34 @@
     const tdeRounded = round2(mediaTDE);
     const mdRounded = round2(md);
     const status = getStatus(mdRounded);
+    const need = round2(neededAVF(mdRounded));
+    const needAvp2ForApproval = neededAVP2ForApproval(avp1, tdeRounded);
 
     revealResultCard();
     mediaTDESpan.textContent = tdeRounded.toFixed(2).replace(".", ",");
     mediaSemSpan.textContent = mdRounded.toFixed(2).replace(".", ",");
 
-    statusBadge.hidden = false;
-    statusBadge.className = "badge";
-    statusBadge.classList.add(status.cls);
-    statusBadge.textContent = status.label;
+    resultCard.classList.remove(...RESULT_STATUS_CLASSES);
+    resultCard.classList.add(status.cls);
+    resultHeadline.textContent = status.headline;
+    resultLead.textContent = status.lead;
 
-    if (status.key === "avf") {
-      const need = round2(neededAVF(mdRounded));
-      message.innerHTML = `Você foi para a AVF. Para alcançar média final 5, precisa tirar <b>${need.toFixed(2).replace(".", ",")}</b>.`;
-    } else {
+    if (status.key === "aprovado") {
       message.textContent = status.message;
+    } else if (status.key === "avf") {
+      message.textContent = `Você precisa tirar ${need.toFixed(2).replace(".", ",")} na AVF para chegar à média final 5,0.`;
+    } else {
+      message.textContent = "Média abaixo de 4,0.";
+    }
+
+    if (avp2WasBlank) {
+      if (needAvp2ForApproval <= 0) {
+        message.textContent = "Mesmo sem AVP2, você já alcançou média 7,0.";
+      } else if (needAvp2ForApproval <= 10) {
+        message.textContent = `Você precisa tirar ${needAvp2ForApproval.toFixed(2).replace(".", ",")} na AVP2 para alcançar média 7,0.`;
+      } else {
+        message.textContent = "Mesmo com 10,0 na AVP2, não é possível atingir média 7,0.";
+      }
     }
 
     pushHistory({
@@ -400,7 +489,7 @@
       md: mdRounded,
       statusKey: status.key,
       statusLabel: status.label,
-      needAvf: status.key === "avf" ? neededAVF(mdRounded) : null,
+      needAvf: status.key === "avf" ? need : null,
       color: status.color,
     });
 
@@ -409,7 +498,7 @@
   });
 
   clearBtn.addEventListener("click", () => {
-    ids.forEach((id) => {
+    scoreIds.forEach((id) => {
       elems[id].value = "";
       elems[id].classList.remove("is-filled", "is-invalid");
       elems[id].setAttribute("aria-invalid", "false");
@@ -417,24 +506,33 @@
 
     disciplinaInput.value = "";
     updateTextFieldState(disciplinaInput);
-
     clearTimeout(showError._timer);
     errorBox.textContent = "";
     resetResult();
     setButtonLoading(false);
     updateCalcButtonState();
+    disciplinaInput.focus();
   });
 
-  clearHistoryBtn?.addEventListener("click", () => {
-    saveHistory([]);
-    renderHistory();
-    showError("Histórico apagado.");
+  clearHistoryBtn?.addEventListener("click", clearHistory);
+  clearHistoryBtnMobile?.addEventListener("click", clearHistory);
+
+  historyList.addEventListener("click", (event) => {
+    const target = event.target;
+    if (!(target instanceof HTMLElement)) return;
+    const index = Number(target.dataset.removeIndex);
+    if (target.closest(".history-remove")) {
+      removeHistoryItem(index);
+    }
   });
 
-  clearHistoryBtnMobile?.addEventListener("click", () => {
-    saveHistory([]);
-    renderHistory();
-    showError("Histórico apagado.");
+  historyListMobile.addEventListener("click", (event) => {
+    const target = event.target;
+    if (!(target instanceof HTMLElement)) return;
+    const index = Number(target.dataset.removeIndex);
+    if (target.closest(".history-remove")) {
+      removeHistoryItem(index);
+    }
   });
 
   openHistoryBtn?.addEventListener("click", openDrawer);
@@ -451,7 +549,6 @@
     if (!isMobile()) {
       closeDrawer();
     }
-
     syncFaqDisclosure();
   });
 
@@ -461,5 +558,5 @@
   syncFaqDisclosure();
   updateCalcButtonState();
   updateTextFieldState(disciplinaInput);
-  ids.forEach((id) => updateFieldVisualState(elems[id]));
+  scoreIds.forEach((id) => updateFieldVisualState(elems[id]));
 })();
