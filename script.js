@@ -306,6 +306,13 @@
   function removeHistoryItem(index) {
     const current = loadHistory();
     if (!Number.isInteger(index) || index < 0 || index >= current.length) return;
+
+    const item = current[index];
+    const confirmed = window.confirm(
+      `Tem certeza que deseja remover "${item?.disciplina || "este cálculo"}" do histórico?`
+    );
+    if (!confirmed) return;
+
     current.splice(index, 1);
     saveHistory(current);
     renderHistory();
@@ -313,6 +320,9 @@
   }
 
   function clearHistory() {
+    const confirmed = window.confirm("Tem certeza que deseja apagar todo o histórico?");
+    if (!confirmed) return;
+
     saveHistory([]);
     renderHistory();
     showError("Histórico apagado.");
