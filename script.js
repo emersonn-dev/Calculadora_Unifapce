@@ -1,4 +1,6 @@
 (() => {
+  const systemThemeQuery = window.matchMedia("(prefers-color-scheme: dark)");
+
   const scoreIds = ["tde1", "tde2", "tde3", "tde4", "avp1", "avp2"];
   const navigationIds = ["disciplina", ...scoreIds];
   const elems = Object.fromEntries(scoreIds.map((id) => [id, document.getElementById(id)]));
@@ -35,6 +37,10 @@
 
   const clamp10 = (n) => Math.min(10, Math.max(0, n));
   const round2 = (n) => Math.round(n * 100) / 100;
+
+  function initTheme() {
+    document.documentElement.classList.toggle("dark", systemThemeQuery.matches);
+  }
 
   function isMobile() {
     return window.matchMedia(HISTORY_DRAWER_QUERY).matches;
@@ -130,7 +136,7 @@
   }
 
   function neededAVP2ForApproval(avp1, mediaTDE) {
-    return round2((7 - (avp1 * 0.4) - (mediaTDE * 0.2)) / 0.4);
+    return round2((7 - avp1 * 0.4 - mediaTDE * 0.2) / 0.4);
   }
 
   function showError(text) {
@@ -373,6 +379,14 @@
     }
   }
 
+  initTheme();
+
+  if (typeof systemThemeQuery.addEventListener === "function") {
+    systemThemeQuery.addEventListener("change", () => {
+      initTheme();
+    });
+  }
+
   navigationIds.forEach((id, index) => {
     const field = document.getElementById(id);
     if (!field) return;
@@ -447,7 +461,7 @@
 
     const [t1, t2, t3, t4, avp1, avp2] = values;
     const mediaTDE = (t1 + t2 + t3 + t4) / 4;
-    const md = (avp1 * 0.4) + (avp2 * 0.4) + (mediaTDE * 0.2);
+    const md = avp1 * 0.4 + avp2 * 0.4 + mediaTDE * 0.2;
 
     const tdeRounded = round2(mediaTDE);
     const mdRounded = round2(md);

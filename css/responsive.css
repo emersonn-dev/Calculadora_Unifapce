@@ -56,7 +56,7 @@
     width: min(88vw, 360px);
     height: 100dvh;
     flex-direction: column;
-    background: #fff;
+    background: var(--drawer-bg);
     border-left: 1px solid var(--border);
     box-shadow: -16px 0 38px rgba(15, 23, 42, 0.12);
     overflow: hidden;
@@ -68,7 +68,7 @@
     justify-content: space-between;
     gap: 12px;
     padding: 20px 18px 14px;
-    border-bottom: 1px solid #e8eef5;
+    border-bottom: 1px solid var(--drawer-border);
   }
 
   #drawerTitle {
@@ -85,7 +85,7 @@
     height: 42px;
     border: 1px solid var(--border);
     border-radius: 12px;
-    background: #fff;
+    background: var(--card);
     color: var(--text);
     font-size: 1.35rem;
     cursor: pointer;
@@ -112,7 +112,6 @@
   }
 
   .hero__heading {
-    gap: 10px;
   }
 
   .brand-title {
@@ -174,7 +173,7 @@
   }
 }
 
-@media (max-width: 520px) {
+@media (max-width: 640px) {
   .page-shell {
     padding-inline: 12px;
   }
@@ -186,6 +185,10 @@
   .brand-subtitle {
     max-width: 24ch;
     font-size: 0.95rem;
+  }
+
+  .hero__heading {
+    min-height: 42px;
   }
 
   .calc-card__header,

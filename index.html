@@ -4,8 +4,6 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <meta name="color-scheme" content="light dark" />
-
   <title>Calculadora de Média UNIFAPCE | AVP, TDE, AVF e Situação Final</title>
 
   <meta name="description"
@@ -35,6 +33,12 @@
     function gtag() { dataLayer.push(arguments); }
     gtag('js', new Date());
     gtag('config', 'G-F3J3FJKRWF');
+  </script>
+  <script>
+    document.documentElement.classList.toggle(
+      "dark",
+      window.matchMedia("(prefers-color-scheme: dark)").matches
+    );
   </script>
 
   <link rel="icon" type="image/png" sizes="32x32" href="assets/capelo.png">
