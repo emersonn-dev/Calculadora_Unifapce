@@ -239,6 +239,9 @@ select {
 .history-card {
   padding: 0;
   overflow: hidden;
+  max-height: calc(100dvh - 48px);
+  display: flex;
+  flex-direction: column;
 }
 
 .history-card .panel-header {
@@ -262,21 +265,36 @@ select {
   list-style: none;
   margin: 18px 0 0;
   padding: 0 16px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+
+.history-card .history-list {
+  max-height: min(52dvh, 520px);
+  padding-bottom: 2px;
+}
+
+.history-date-divider {
+  margin: 4px 2px -2px;
+  color: var(--text-muted);
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
 }
 
 .history-item {
-  padding: 12px 14px;
+  padding: 10px 12px;
   border: 1px solid var(--history-item-border);
-  border-radius: 14px;
+  border-radius: 12px;
   background: var(--history-item-bg);
 }
 
 .history-top {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 6px;
+  display: grid;
+  gap: 8px;
+  margin-bottom: 8px;
 }
 
 .history-left {
@@ -286,22 +304,30 @@ select {
 .history-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   flex-shrink: 0;
+  flex-wrap: wrap;
+  justify-content: flex-start;
 }
 
 .history-title {
   font-size: 0.92rem;
   font-weight: 700;
   line-height: 1.4;
-  overflow-wrap: anywhere;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .history-date,
 .history-line {
   color: var(--text-soft);
-  font-size: 0.84rem;
-  line-height: 1.55;
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+
+.history-line--compact {
+  margin-top: 2px;
 }
 
 .history-badge {
@@ -331,6 +357,7 @@ select {
 }
 
 .history-remove,
+.history-use,
 .btn-link,
 .history-toggle,
 .btn-primary,
@@ -351,6 +378,27 @@ select {
   background: var(--card);
   color: var(--text-soft);
   cursor: pointer;
+}
+
+.history-use {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 30px;
+  padding: 0 9px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--card);
+  color: var(--primary);
+  font-size: 0.76rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.history-use:hover,
+.history-use:focus-visible {
+  border-color: color-mix(in srgb, var(--primary) 30%, transparent);
+  background: color-mix(in srgb, var(--primary) 8%, var(--card));
 }
 
 .history-remove:hover,
@@ -374,6 +422,7 @@ select {
   font-size: 0.88rem;
   font-weight: 700;
   cursor: pointer;
+  flex: 0 0 auto;
 }
 
 .btn-link:hover,
@@ -381,6 +430,22 @@ select {
   border-color: var(--border-strong);
   color: var(--text);
   background: var(--control-bg-hover);
+}
+
+.history-footer-actions {
+  display: grid;
+  gap: 8px;
+  padding: 18px 22px 22px;
+}
+
+.history-footer-actions .btn-link {
+  width: 100%;
+  margin: 0;
+}
+
+.btn-link--subtle {
+  min-height: 36px;
+  font-size: 0.82rem;
 }
 
 .calc-card {
@@ -873,8 +938,62 @@ select {
   display: none;
 }
 
+.history-drawer.is-open {
+  display: flex;
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 100;
+  width: min(92vw, 440px);
+  height: 100dvh;
+  flex-direction: column;
+  background: var(--drawer-bg);
+  border-left: 1px solid var(--border);
+  box-shadow: -16px 0 38px rgba(15, 23, 42, 0.12);
+  overflow: hidden;
+}
+
+.drawer-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 20px 18px 14px;
+  border-bottom: 1px solid var(--drawer-border);
+}
+
 .drawer-header > div {
   min-width: 0;
+}
+
+#drawerTitle {
+  color: var(--text);
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.drawer-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--card);
+  color: var(--text);
+  font-size: 1.35rem;
+  cursor: pointer;
+}
+
+.drawer-body {
+  padding: 16px 16px 22px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.drawer-body .history-list {
+  padding-inline: 0;
 }
 
 .footer {

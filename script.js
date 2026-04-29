@@ -19,6 +19,7 @@
 
   const historyEmpty = document.getElementById("historyEmpty");
   const historyList = document.getElementById("historyList");
+  const openFullHistoryBtn = document.getElementById("openFullHistoryBtn");
   const clearHistoryBtn = document.getElementById("clearHistoryBtn");
   const faqDisclosure = document.getElementById("faqDisclosure");
 
@@ -31,8 +32,8 @@
   const clearHistoryBtnMobile = document.getElementById("clearHistoryBtnMobile");
 
   const HISTORY_KEY = "calc_media_history_unifapce_v3";
-  const MAX_HISTORY = 12;
-  const HISTORY_DRAWER_QUERY = "(max-width: 980px)";
+  const MAX_HISTORY = 50;
+  const RECENT_HISTORY_LIMIT = 5;
   const RESULT_STATUS_CLASSES = ["status--green", "status--yellow", "status--red"];
 
   const clamp10 = (n) => Math.min(10, Math.max(0, n));
@@ -40,10 +41,6 @@
 
   function initTheme() {
     document.documentElement.classList.toggle("dark", systemThemeQuery.matches);
-  }
-
-  function isMobile() {
-    return window.matchMedia(HISTORY_DRAWER_QUERY).matches;
   }
 
   function syncFaqDisclosure() {
@@ -131,12 +128,53 @@
     };
   }
 
+  function getPartialStatusForMissingAVP2(maxPossibleMd) {
+    if (maxPossibleMd >= 7) {
+      return {
+        key: "parcial-avp2",
+        label: "AVP2 pendente",
+        headline: "AVP2 pendente",
+        cls: "status--yellow",
+        color: "yellow",
+        lead: "Ainda falta a AVP2 para definir se dá para passar direto.",
+      };
+    }
+
+    if (maxPossibleMd >= 4) {
+      return {
+        key: "parcial-avf",
+        label: "Pode ir para AVF",
+        headline: "Ainda dá para ir para AVF",
+        cls: "status--yellow",
+        color: "yellow",
+        lead: "A aprovação direta não é mais possível só com a AVP2, mas a AVF ainda está ao alcance.",
+      };
+    }
+
+    return {
+      key: "parcial-sem-avf",
+      label: "Sem faixa de AVF",
+      headline: "AVF não é mais possível",
+      cls: "status--red",
+      color: "red",
+      lead: "Mesmo com a nota máxima na AVP2, a faixa da AVF não será alcançada.",
+    };
+  }
+
   function neededAVF(md) {
     return clamp10(10 - md);
   }
 
   function neededAVP2ForApproval(avp1, mediaTDE) {
     return round2((7 - avp1 * 0.4 - mediaTDE * 0.2) / 0.4);
+  }
+
+  function neededAVP2ForAVF(avp1, mediaTDE) {
+    return round2((4 - avp1 * 0.4 - mediaTDE * 0.2) / 0.4);
+  }
+
+  function formatGrade(value) {
+    return Number(value).toFixed(2).replace(".", ",");
   }
 
   function showError(text) {
@@ -259,10 +297,19 @@
     removeBtn.dataset.removeIndex = String(index);
     removeBtn.textContent = "x";
 
+    const useBtn = document.createElement("button");
+    useBtn.type = "button";
+    useBtn.className = "history-use";
+    useBtn.setAttribute("aria-label", `Usar notas de ${item.disciplina}`);
+    useBtn.dataset.loadIndex = String(index);
+    useBtn.textContent = "Usar";
+    useBtn.hidden = !item.scores;
+
     const line1 = document.createElement("div");
     line1.className = "history-line";
     line1.innerHTML = `MD: <b>${Number(item.md).toFixed(2)}</b> · TDEs: ${Number(item.tde).toFixed(2)}`;
 
+    actions.appendChild(useBtn);
     actions.appendChild(badge);
     actions.appendChild(removeBtn);
     top.appendChild(left);
@@ -278,22 +325,69 @@
       li.appendChild(line2);
     }
 
+    if (item.needAvp2ForAVF != null && Number.isFinite(Number(item.needAvp2ForAVF)) && item.statusKey !== "aprovado") {
+      const line3 = document.createElement("div");
+      line3.className = "history-line history-line--compact";
+      line3.innerHTML = `AVP2 p/ AVF: <b>${Number(item.needAvp2ForAVF).toFixed(2)}</b>`;
+      li.appendChild(line3);
+    }
+
     return li;
+  }
+
+  function getHistoryGroupLabel(item) {
+    const datePart = String(item.when || "").split(" ")[0];
+    const [day, month, year] = datePart.split("/");
+
+    if (!day || !month || !year) return "Sem data";
+
+    const today = new Date();
+    const todayLabel = `${pad2(today.getDate())}/${pad2(today.getMonth() + 1)}/${today.getFullYear()}`;
+
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
+    const yesterdayLabel = `${pad2(yesterday.getDate())}/${pad2(yesterday.getMonth() + 1)}/${yesterday.getFullYear()}`;
+
+    if (datePart === todayLabel) return "Hoje";
+    if (datePart === yesterdayLabel) return "Ontem";
+    return `${month}/${year}`;
+  }
+
+  function appendHistoryItems(target, items, { grouped = false } = {}) {
+    let currentGroup = "";
+
+    items.forEach(({ item, index }) => {
+      if (grouped) {
+        const group = getHistoryGroupLabel(item);
+        if (group !== currentGroup) {
+          currentGroup = group;
+          const divider = document.createElement("li");
+          divider.className = "history-date-divider";
+          divider.textContent = group;
+          target.appendChild(divider);
+        }
+      }
+
+      target.appendChild(buildHistoryItem(item, index));
+    });
   }
 
   function renderHistory() {
     const history = loadHistory();
+    const indexedHistory = history.map((item, index) => ({ item, index }));
+    const recentHistory = indexedHistory.slice(0, RECENT_HISTORY_LIMIT);
 
     historyList.innerHTML = "";
     historyListMobile.innerHTML = "";
 
     historyEmpty.style.display = history.length ? "none" : "block";
     historyEmptyMobile.style.display = history.length ? "none" : "block";
+    if (openFullHistoryBtn) {
+      openFullHistoryBtn.hidden = !history.length;
+    }
 
-    history.forEach((item, index) => {
-      historyList.appendChild(buildHistoryItem(item, index));
-      historyListMobile.appendChild(buildHistoryItem(item, index));
-    });
+    appendHistoryItems(historyList, recentHistory);
+    appendHistoryItems(historyListMobile, indexedHistory, { grouped: true });
   }
 
   function pushHistory(entry) {
@@ -329,7 +423,6 @@
   }
 
   function openDrawer() {
-    if (!isMobile()) return;
     overlay.hidden = false;
     historyDrawer.classList.add("is-open");
     historyDrawer.setAttribute("aria-hidden", "false");
@@ -343,6 +436,46 @@
     historyDrawer.setAttribute("aria-hidden", "true");
     openHistoryBtn?.setAttribute("aria-expanded", "false");
     document.body.style.overflow = "";
+  }
+
+  function restoreHistoryItem(index) {
+    const current = loadHistory();
+    const item = current[index];
+
+    if (!item?.scores) {
+      showError("Esse item antigo não tem as notas salvas para reutilizar.");
+      return;
+    }
+
+    disciplinaInput.value = item.disciplina === "Sem disciplina" ? "" : item.disciplina;
+    updateTextFieldState(disciplinaInput);
+
+    scoreIds.forEach((id) => {
+      elems[id].value = item.scores[id] ?? "";
+      validateInputValue(elems[id]);
+    });
+
+    resetResult();
+    updateCalcButtonState();
+    closeDrawer();
+    showError("Notas carregadas do histórico.");
+    calcBtn.focus();
+  }
+
+  function handleHistoryListClick(event) {
+    const target = event.target;
+    if (!(target instanceof HTMLElement)) return;
+
+    const removeButton = target.closest(".history-remove");
+    if (removeButton instanceof HTMLElement) {
+      removeHistoryItem(Number(removeButton.dataset.removeIndex));
+      return;
+    }
+
+    const loadButton = target.closest(".history-use");
+    if (loadButton instanceof HTMLElement) {
+      restoreHistoryItem(Number(loadButton.dataset.loadIndex));
+    }
   }
 
   function validateInputValue(el) {
@@ -472,12 +605,17 @@
     const [t1, t2, t3, t4, avp1, avp2] = values;
     const mediaTDE = (t1 + t2 + t3 + t4) / 4;
     const md = avp1 * 0.4 + avp2 * 0.4 + mediaTDE * 0.2;
+    const maxPossibleMd = avp1 * 0.4 + 10 * 0.4 + mediaTDE * 0.2;
 
     const tdeRounded = round2(mediaTDE);
     const mdRounded = round2(md);
-    const status = getStatus(mdRounded);
+    const maxPossibleRounded = round2(maxPossibleMd);
+    const status = avp2WasBlank
+      ? getPartialStatusForMissingAVP2(maxPossibleRounded)
+      : getStatus(mdRounded);
     const need = round2(neededAVF(mdRounded));
     const needAvp2ForApproval = neededAVP2ForApproval(avp1, tdeRounded);
+    const needAvp2ForAVF = neededAVP2ForAVF(avp1, tdeRounded);
 
     revealResultCard();
     mediaTDESpan.textContent = tdeRounded.toFixed(2).replace(".", ",");
@@ -488,22 +626,30 @@
     resultHeadline.textContent = status.headline;
     resultLead.textContent = status.lead;
 
-    if (status.key === "aprovado") {
+    if (avp2WasBlank) {
+      if (maxPossibleRounded >= 7) {
+        if (needAvp2ForApproval <= 0) {
+          message.textContent = "Mesmo sem AVP2, você já alcançou média 7,0.";
+        } else {
+          const avfText = needAvp2ForAVF <= 0
+            ? "Você já está na faixa da AVF."
+            : `Para pelo menos ir para AVF, precisa tirar ${formatGrade(needAvp2ForAVF)} na AVP2.`;
+          message.textContent = `${avfText} Para passar direto, precisa tirar ${formatGrade(needAvp2ForApproval)} na AVP2.`;
+        }
+      } else if (maxPossibleRounded >= 4) {
+        const avfText = needAvp2ForAVF <= 0
+          ? "Você já está na faixa da AVF."
+          : `Você precisa tirar ${formatGrade(needAvp2ForAVF)} na AVP2 para ir para AVF.`;
+        message.textContent = `${avfText} Mesmo com 10,0 na AVP2, não dá para passar direto.`;
+      } else {
+        message.textContent = "Mesmo com 10,0 na AVP2, não é possível alcançar a faixa da AVF.";
+      }
+    } else if (status.key === "aprovado") {
       message.textContent = status.message;
     } else if (status.key === "avf") {
-      message.textContent = `Você precisa tirar ${need.toFixed(2).replace(".", ",")} na AVF para chegar à média final 5,0.`;
+      message.textContent = `Você precisa tirar ${formatGrade(need)} na AVF para chegar à média final 5,0.`;
     } else {
       message.textContent = "Média abaixo de 4,0.";
-    }
-
-    if (avp2WasBlank) {
-      if (needAvp2ForApproval <= 0) {
-        message.textContent = "Mesmo sem AVP2, você já alcançou média 7,0.";
-      } else if (needAvp2ForApproval <= 10) {
-        message.textContent = `Você precisa tirar ${needAvp2ForApproval.toFixed(2).replace(".", ",")} na AVP2 para alcançar média 7,0.`;
-      } else {
-        message.textContent = "Mesmo com 10,0 na AVP2, não é possível atingir média 7,0.";
-      }
     }
 
     pushHistory({
@@ -514,7 +660,16 @@
       statusKey: status.key,
       statusLabel: status.label,
       needAvf: status.key === "avf" ? need : null,
+      needAvp2ForAVF: avp2WasBlank && needAvp2ForAVF > 0 && needAvp2ForAVF <= 10 ? needAvp2ForAVF : null,
       color: status.color,
+      scores: {
+        tde1: t1,
+        tde2: t2,
+        tde3: t3,
+        tde4: t4,
+        avp1,
+        avp2: avp2WasBlank ? "" : avp2,
+      },
     });
 
     setButtonLoading(false);
@@ -541,25 +696,11 @@
   clearHistoryBtn?.addEventListener("click", clearHistory);
   clearHistoryBtnMobile?.addEventListener("click", clearHistory);
 
-  historyList.addEventListener("click", (event) => {
-    const target = event.target;
-    if (!(target instanceof HTMLElement)) return;
-    const index = Number(target.dataset.removeIndex);
-    if (target.closest(".history-remove")) {
-      removeHistoryItem(index);
-    }
-  });
-
-  historyListMobile.addEventListener("click", (event) => {
-    const target = event.target;
-    if (!(target instanceof HTMLElement)) return;
-    const index = Number(target.dataset.removeIndex);
-    if (target.closest(".history-remove")) {
-      removeHistoryItem(index);
-    }
-  });
+  historyList.addEventListener("click", handleHistoryListClick);
+  historyListMobile.addEventListener("click", handleHistoryListClick);
 
   openHistoryBtn?.addEventListener("click", openDrawer);
+  openFullHistoryBtn?.addEventListener("click", openDrawer);
   closeHistoryBtn?.addEventListener("click", closeDrawer);
   overlay?.addEventListener("click", closeDrawer);
 
@@ -570,9 +711,6 @@
   });
 
   window.addEventListener("resize", () => {
-    if (!isMobile()) {
-      closeDrawer();
-    }
     syncFaqDisclosure();
   });
 

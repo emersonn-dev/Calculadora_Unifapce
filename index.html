@@ -76,7 +76,10 @@
             recentes aparecerão aqui.</p>
           <ul id="historyList" class="history-list" aria-label="Lista de histórico"></ul>
 
-          <button id="clearHistoryBtn" type="button" class="btn-link">Limpar histórico</button>
+          <div class="history-footer-actions">
+            <button id="openFullHistoryBtn" type="button" class="btn-link">Ver histórico completo</button>
+            <button id="clearHistoryBtn" type="button" class="btn-link btn-link--subtle">Limpar histórico</button>
+          </div>
         </section>
       </aside>
 
@@ -98,7 +101,7 @@
 
             <button id="openHistoryBtn" type="button" class="history-toggle" aria-controls="historyDrawer"
               aria-expanded="false">
-              Abrir histórico
+              Histórico completo
             </button>
           </header>
 
@@ -242,10 +245,10 @@
 
     <div id="overlay" class="overlay" hidden></div>
 
-    <aside id="historyDrawer" class="history-drawer" aria-hidden="true" aria-label="Histórico no mobile">
+    <aside id="historyDrawer" class="history-drawer" aria-hidden="true" aria-label="Histórico completo">
       <div class="drawer-header">
         <div>
-          <span id="drawerTitle">Histórico</span>
+          <span id="drawerTitle">Histórico completo</span>
         </div>
         <button id="closeHistoryBtn" type="button" class="drawer-close" aria-label="Fechar">
           <span aria-hidden="true">x</span>
